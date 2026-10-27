@@ -94,6 +94,11 @@ button.small { padding: 6px 10px; font-size: 0.8rem; color: var(--muted); }
 .section-title { margin: 16px 0 0; font-size: 1.1rem; color: #ffd23f; }
 .help { margin-top: 12px; line-height: 1.7; }
 
+/* 언어 선택 버튼: 고른 언어는 노란 글씨 */
+.lang-switch { display: flex; gap: 8px; justify-content: center; }
+.lang-switch button[aria-pressed="true"] { color: #ffd23f; border-color: #ffd23f; }
+
+.legend b { font-weight: normal; }
 .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: center; font-size: 0.85rem; color: var(--muted); }
 .dot { display: inline-block; width: 12px; height: 12px; margin-right: 5px; vertical-align: -1px; border: 2px solid #000; }
 .dot.player { background: #2f7fe0; }

@@ -13,29 +13,35 @@
 
     <!-- 시작 화면 -->
     <section id="menu-screen" class="menu">
+      <!-- 언어 선택 -->
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button class="small" data-lang="ko">한국어</button>
+        <button class="small" data-lang="en">English</button>
+        <button class="small" data-lang="ja">日本語</button>
+      </div>
       <p class="clock">04:00 AM</p>
-      <h1 class="title">새벽 4시: 괴담 탈출!</h1>
-      <p class="subtitle">열쇠를 모아 출구를 열고, 괴담 신부 WKB에게 잡히기 전에 탈출하라.</p>
+      <h1 class="title" data-i18n="title">새벽 4시: 괴담 탈출!</h1>
+      <p class="subtitle" data-i18n="subtitle">열쇠를 모아 출구를 열고, 괴담 신부 WKB에게 잡히기 전에 탈출하라.</p>
       <div class="menu-buttons">
-        <button id="btn-start" class="primary">처음부터 시작</button>
+        <button id="btn-start" class="primary" data-i18n="start">처음부터 시작</button>
         <button id="btn-continue" hidden>이어하기</button>
       </div>
       <p id="menu-progress" class="muted"></p>
 
-      <div class="legend" aria-label="등장 요소 설명">
-        <span><i class="dot player"></i>나</span>
-        <span><i class="dot wkb"></i>WKB (잡히면 끝)</span>
-        <span><i class="dot key"></i>열쇠</span>
-        <span><i class="dot exit"></i>출구</span>
-        <span><i class="dot corgi"></i>코기블린 (-5초)</span>
-        <span><i class="dot happy"></i>해피 (길막·HECK!)</span>
+      <div class="legend" data-i18n-aria="legend" aria-label="등장 요소 설명">
+        <span><i class="dot player"></i><b data-i18n="lgMe">나</b></span>
+        <span><i class="dot wkb"></i><b data-i18n="lgWkb">WKB (잡히면 끝)</b></span>
+        <span><i class="dot key"></i><b data-i18n="lgKey">열쇠</b></span>
+        <span><i class="dot exit"></i><b data-i18n="lgExit">출구</b></span>
+        <span><i class="dot corgi"></i><b data-i18n="lgCorgi">코기블린 (-5초)</b></span>
+        <span><i class="dot happy"></i><b data-i18n="lgHappy">해피 (길막·HECK!)</b></span>
       </div>
 
-      <h2 class="section-title">스테이지 선택</h2>
+      <h2 class="section-title" data-i18n="selectStage">스테이지 선택</h2>
       <div id="stage-list"></div>
 
-      <p class="muted help">조작: 방향키 / WASD 이동 · P 또는 Esc 일시정지 · R 재시작 · M 배경음악 · 모바일은 D-Pad 또는 스와이프</p>
-      <button id="btn-reset" class="small">진행도 초기화</button>
+      <p class="muted help" data-i18n="help">조작: 방향키 / WASD 이동 · P 또는 Esc 일시정지 · R 재시작 · M 소리 켜기/끄기 · 모바일은 D-Pad 또는 스와이프</p>
+      <button id="btn-reset" class="small" data-i18n="reset">진행도 초기화</button>
     </section>
 
     <!-- 게임 화면 -->
@@ -48,12 +54,12 @@
         <div class="hud-right">
           <span id="hud-keys" class="pill"></span>
           <span id="hud-time" class="pill"></span>
-          <button id="btn-pause" class="icon-btn" aria-label="일시정지">⏸</button>
+          <button id="btn-pause" class="icon-btn" data-i18n-aria="pause" aria-label="일시정지">⏸</button>
         </div>
       </header>
 
       <div class="board-wrap">
-        <canvas id="board" aria-label="게임 화면"></canvas>
+        <canvas id="board" data-i18n-aria="board" aria-label="게임 화면"></canvas>
         <div id="toast" class="toast" role="status" hidden></div>
         <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
           <div class="modal-box">
@@ -64,19 +70,21 @@
         </div>
       </div>
 
-      <div id="dpad" class="dpad" aria-label="방향 버튼">
-        <button data-dir="up" class="d-up" aria-label="위로">▲</button>
-        <button data-dir="left" class="d-left" aria-label="왼쪽으로">◀</button>
-        <button data-dir="down" class="d-down" aria-label="아래로">▼</button>
-        <button data-dir="right" class="d-right" aria-label="오른쪽으로">▶</button>
+      <div id="dpad" class="dpad" data-i18n-aria="dpad" aria-label="방향 버튼">
+        <button data-dir="up" class="d-up" data-i18n-aria="up" aria-label="위로">▲</button>
+        <button data-dir="left" class="d-left" data-i18n-aria="left" aria-label="왼쪽으로">◀</button>
+        <button data-dir="down" class="d-down" data-i18n-aria="down" aria-label="아래로">▼</button>
+        <button data-dir="right" class="d-right" data-i18n-aria="right" aria-label="오른쪽으로">▶</button>
       </div>
     </section>
 
   </main>
 
-  <!-- 배경음악 켜기/끄기 (M 키로도 가능) -->
-  <button id="btn-bgm" class="icon-btn bgm-btn" aria-label="배경음악 끄기">🔊</button>
+  <!-- 소리(배경음악+효과음) 켜기/끄기 (M 키로도 가능) -->
+  <button id="btn-bgm" class="icon-btn bgm-btn" aria-label="소리 끄기">🔊</button>
 
+  <script src="js/i18n.js"></script>
+  <script src="js/sfx.js"></script>
   <script src="js/bgm.js"></script>
   <script src="js/stages.js"></script>
   <script src="js/render.js"></script>

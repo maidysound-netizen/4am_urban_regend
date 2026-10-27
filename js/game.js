@@ -16,7 +16,8 @@ const SAVE_KEY = '4am-escape-progress';
 const renderer = createRenderer(document.getElementById('board'));
 const input = createInput();
 const el = id => document.getElementById(id);
-createBgm(el('btn-bgm'));
+const bgm = createBgm(el('btn-bgm'));
+const sfx = createSfx(bgm.isMuted);
 
 let state = null;       // 지금 하고 있는 판의 모든 정보 (메뉴에선 null)
 let progress = loadProgress();
@@ -84,10 +85,10 @@ function loadStage(stageId) {
   input.clear();
   closeModal();
   document.body.dataset.chapter = stage.chapter;
-  el('hud-stage').textContent = `Stage ${stage.id} · ${stage.name}`;
-  el('hud-chapter').textContent = `챕터 ${stage.chapter}. ${CHAPTERS[stage.chapter].name}`;
-  if (level.happys.length && stage.id === firstHappyStageId()) toast('Heck💕Heck💕Heeeeeck!!🔥🐶💕 해피 등장!', 2500);
-  else toast(`Stage ${stage.id} — ${stage.name}`, 1500);
+  el('hud-stage').textContent = `Stage ${stage.id} · ${stageName(stage)}`;
+  el('hud-chapter').textContent = t('chapter', { n: stage.chapter, name: chapterName(stage.chapter) });
+  if (level.happys.length && stage.id === firstHappyStageId()) { toast(t('happyAppears'), 2500); sfx.heck(); }
+  else { toast(`Stage ${stage.id} — ${stageName(stage)}`, 1500); sfx.start(); }
   updateHud();
 }
 
@@ -176,8 +177,11 @@ function openDirs(x, y, extraBlocked) {
 function update(dt) {
   if (!state || state.status !== 'playing') return; // 멈췄거나 끝났으면 아무것도 안 움직임
 
-  // 1) 시간
+  // 1) 시간 (마지막 10초는 1초마다 째깍)
+  const secBefore = Math.ceil(state.remainingMs / 1000);
   state.remainingMs -= dt;
+  const secNow = Math.ceil(state.remainingMs / 1000);
+  if (secNow < secBefore && secNow <= 10 && secNow > 0) sfx.tick();
   state.hasteMs = Math.max(0, state.hasteMs - dt);
   state.hurtMs = Math.max(0, state.hurtMs - dt);
   if (state.toastMs > 0) {
@@ -186,7 +190,7 @@ function update(dt) {
   }
   if (state.remainingMs <= 0) {
     state.remainingMs = 0;
-    return lose('시간 초과! 새벽 4시가 끝나 버렸다...');
+    return lose(t('timeUp'));
   }
 
   // 2) 플레이어 이동 (한 틱에 최대 한 칸, 벽과 해피는 못 지나감)
@@ -199,6 +203,7 @@ function update(dt) {
         state.player.x = nx;
         state.player.y = ny;
         state.moveCooldown = PLAYER_MOVE_MS;
+        sfx.step();
         if (afterPlayerMove()) return; // 승부가 났으면 이번 프레임은 여기서 끝
       }
     }
@@ -220,7 +225,7 @@ function updateWkb(e, dt) {
   const step = nextStepToward(e, state.player);
   if (step && !enemyAt('happy', step.x, step.y)) { e.x = step.x; e.y = step.y; } // 해피가 막고 있으면 기다림
   if (isPlayerAt(e.x, e.y)) {
-    lose('WKB에게 붙잡혔다! 💍');
+    lose(t('caught'));
     return true;
   }
   return false;
@@ -247,7 +252,8 @@ function corgiBite(c) {
   state.remainingMs -= CORGI_PENALTY_MS;
   state.hurtMs = 600;
   c.restMs = CORGI_REST_MS;
-  toast('왈! 코기블린에게 물렸다! -5초', 1500);
+  toast(t('bitten'), 1500);
+  sfx.bite();
 }
 
 // 해피: 느릿느릿 돌아다니며 길을 막고, 가끔 HECK! 소리로 WKB를 흥분시킨다
@@ -259,7 +265,8 @@ function updateHappy(h, dt) {
     h.shoutMs = 1500;
     h.pauseMs = h.cfg.pauseMs; // 길막 패턴: 소리친 뒤 그 자리에 버티기
     state.hasteMs = HECK_HASTE_MS;
-    toast('Heck💕Heck💕Heeeeeck!!🔥🐶💕 WKB가 흥분했다!', 1800);
+    toast(t('heckHaste'), 1800);
+    sfx.heck();
   }
   if (h.pauseMs > 0) { h.pauseMs -= dt; return; }
   h.timer -= dt;
@@ -277,7 +284,7 @@ function updateHappy(h, dt) {
 function afterPlayerMove() {
   const p = state.player;
   if (enemyAt('wkb', p.x, p.y)) {
-    lose('WKB에게 정면으로 걸어 들어갔다! 💍');
+    lose(t('walkedInto'));
     return true;
   }
   const corgi = enemyAt('corgi', p.x, p.y);
@@ -287,14 +294,17 @@ function afterPlayerMove() {
   if (key) {
     key.collected = true;
     state.collectedKeys++;
+    sfx.key();
     if (state.stage.gimmick && state.stage.gimmick.rage) {
       const wkb = state.enemies.find(e => e.type === 'wkb');
       wkb.moveMs = Math.round(wkb.moveMs * RAGE_FACTOR);
-      toast('신부의 베일이 펄럭인다... WKB가 더 빨라졌다!', 1500);
+      toast(t('rage'), 1500);
+      sfx.rage();
     }
     if (state.collectedKeys >= state.requiredKeys) {
       state.exitOpen = true;
-      toast('🔓 출구가 열렸다!', 1500);
+      toast(t('exitOpen'), 1500);
+      sfx.open();
     }
   }
   if (state.exitOpen && p.x === state.exit.x && p.y === state.exit.y) {
@@ -315,21 +325,23 @@ function win() {
   progress.bestStage = Math.max(progress.bestStage, idx + 1);
   progress.unlockedStage = Math.min(STAGES.length, Math.max(progress.unlockedStage, idx + 2));
   saveProgress();
+  sfx.win();
 
   if (idx === STAGES.length - 1) return showEnding();
   const secLeft = Math.ceil(state.remainingMs / 1000);
-  openModal('🎉 스테이지 클리어!', `「${state.stage.name}」 탈출 성공! 남은 시간 ${secLeft}초`, [
-    ['다음 스테이지 ▶', () => loadStage(STAGES[idx + 1].id)],
-    ['다시 하기', () => loadStage(state.stage.id)],
-    ['메뉴로', showMenu]
+  openModal(t('clearTitle'), t('clearText', { name: stageName(state.stage), n: secLeft }), [
+    [t('next'), () => loadStage(STAGES[idx + 1].id)],
+    [t('retry'), () => loadStage(state.stage.id)],
+    [t('menu'), showMenu]
   ]);
 }
 
 function lose(reason) {
   state.status = 'lost';
-  openModal('💀 게임 오버', reason, [
-    ['다시 하기', () => loadStage(state.stage.id)],
-    ['메뉴로', showMenu]
+  sfx.lose();
+  openModal(t('overTitle'), reason, [
+    [t('retry'), () => loadStage(state.stage.id)],
+    [t('menu'), showMenu]
   ]);
 }
 
@@ -338,10 +350,11 @@ function togglePause() {
   if (state.status === 'playing') {
     state.status = 'paused';
     input.clear();
-    openModal('⏸ 일시정지', '숨 좀 돌리자. WKB도 잠깐 멈췄다.', [
-      ['계속하기', resume],
-      ['다시 하기', () => loadStage(state.stage.id)],
-      ['메뉴로', showMenu]
+    sfx.pause();
+    openModal(t('pauseTitle'), t('pauseText'), [
+      [t('resume'), resume],
+      [t('retry'), () => loadStage(state.stage.id)],
+      [t('menu'), showMenu]
     ]);
   } else if (state.status === 'paused') {
     resume();
@@ -357,11 +370,9 @@ function resume() {
 
 function showEnding() {
   if (state) state.status = 'won';
-  openModal('🌅 새벽 4시의 끝',
-    '마지막 문이 열리고, 창밖으로 첫 햇살이 들어온다. WKB는 베일을 벗고 조용히 사라졌다… ' +
-    '코기블린은 꼬리를 흔들고, 해피는 마지막으로 외친다. "Heck💕Heck💕Heeeeeck!!🔥🐶💕" — 20개 스테이지 모두 탈출 성공!', [
-      ['처음부터 다시', () => loadStage(STAGES[0].id)],
-      ['메뉴로', showMenu]
+  openModal(t('endTitle'), t('endText'), [
+      [t('restart'), () => loadStage(STAGES[0].id)],
+      [t('menu'), showMenu]
     ]);
 }
 
@@ -372,7 +383,7 @@ function updateHud() {
   if (!state) return;
   el('hud-keys').textContent = `🔑 ${state.collectedKeys}/${state.requiredKeys}`;
   const sec = Math.ceil(state.remainingMs / 1000);
-  el('hud-time').textContent = `⏱ ${sec}초`;
+  el('hud-time').textContent = `⏱ ${t('seconds', { n: sec })}`;
   el('hud-time').classList.toggle('danger', sec <= 10);
 }
 
@@ -414,10 +425,10 @@ function showMenu() {
 
   const cont = el('btn-continue');
   cont.hidden = progress.unlockedStage <= 1;
-  cont.textContent = `이어하기 (Stage ${progress.unlockedStage})`;
+  cont.textContent = t('continue', { n: progress.unlockedStage });
   el('menu-progress').textContent = progress.bestStage
-    ? `최고 기록: Stage ${progress.bestStage} 클리어`
-    : '아직 탈출한 스테이지가 없습니다.';
+    ? t('best', { n: progress.bestStage })
+    : t('noBest');
 
   // 스테이지 선택 목록 (챕터별로 묶어서)
   const list = el('stage-list');
@@ -427,7 +438,7 @@ function showMenu() {
     group.className = 'chapter-group';
     group.dataset.chapter = ch;
     const h = document.createElement('h3');
-    h.textContent = `챕터 ${ch}. ${CHAPTERS[ch].name}`;
+    h.textContent = t('chapter', { n: ch, name: chapterName(ch) });
     group.appendChild(h);
     const grid = document.createElement('div');
     grid.className = 'stage-grid';
@@ -438,8 +449,8 @@ function showMenu() {
       b.className = 'stage-btn';
       b.disabled = locked;
       b.textContent = locked ? `🔒 ${s.id}` : `${s.id}`;
-      b.title = s.name;
-      b.setAttribute('aria-label', `Stage ${s.id} ${s.name}${locked ? ' (잠김)' : ''}`);
+      b.title = stageName(s);
+      b.setAttribute('aria-label', `Stage ${s.id} ${stageName(s)}${locked ? t('locked') : ''}`);
       b.addEventListener('click', () => loadStage(s.id));
       grid.appendChild(b);
     });
@@ -457,6 +468,13 @@ function smooth(e, dt) {
   e.ry += (e.y - e.ry) * k;
 }
 
+// WKB가 가까울수록 배경음악이 빨라진다 (6칸부터 서서히, 붙으면 1.35배)
+function urgency() {
+  const w = state.enemies.find(e => e.type === 'wkb');
+  const d = Math.abs(w.x - state.player.x) + Math.abs(w.y - state.player.y);
+  return 1 + 0.35 * Math.max(0, Math.min(1, (6 - d) / 5));
+}
+
 let lastTime = performance.now();
 function frame(now) {
   const dt = Math.min(100, now - lastTime); // 탭 전환 후 큰 점프 방지
@@ -464,6 +482,7 @@ function frame(now) {
   if (state) {
     if (isPortraitView() !== state.portrait) transposeState();
     update(dt);
+    bgm.setTempo(state.status === 'playing' ? urgency() : 1);
     smooth(state.player, dt);
     state.enemies.forEach(e => smooth(e, dt));
     updateHud();
@@ -478,7 +497,7 @@ function frame(now) {
 el('btn-start').addEventListener('click', () => loadStage(STAGES[0].id));
 el('btn-continue').addEventListener('click', () => loadStage(STAGES[progress.unlockedStage - 1].id));
 el('btn-reset').addEventListener('click', () => {
-  if (!confirm('진행도를 초기화할까요?')) return;
+  if (!confirm(t('resetConfirm'))) return;
   progress = { unlockedStage: 1, bestStage: 0 };
   saveProgress();
   showMenu();
@@ -497,5 +516,14 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden && state && state.status === 'playing') togglePause();
 });
 
+// 언어 바꾸기
+document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => {
+  setLang(b.dataset.lang);
+  bgm.refresh();
+  showMenu();
+}));
+
+applyI18n();
+bgm.refresh();
 showMenu();
 requestAnimationFrame(frame);
