@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>새벽 4시: 괴담 탈출!</title>
+  <!-- 갈무리: 한글이 되는 무료 도트 글꼴 (SIL OFL). 인터넷이 없으면 기본 글꼴로 보인다 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galmuri@2.40.3/dist/galmuri.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+
+    <!-- 시작 화면 -->
+    <section id="menu-screen" class="menu">
+      <p class="clock">04:00 AM</p>
+      <h1 class="title">새벽 4시: 괴담 탈출!</h1>
+      <p class="subtitle">열쇠를 모아 출구를 열고, 괴담 신부 WKB에게 잡히기 전에 탈출하라.</p>
+      <div class="menu-buttons">
+        <button id="btn-start" class="primary">처음부터 시작</button>
+        <button id="btn-continue" hidden>이어하기</button>
+      </div>
+      <p id="menu-progress" class="muted"></p>
+
+      <div class="legend" aria-label="등장 요소 설명">
+        <span><i class="dot player"></i>나</span>
+        <span><i class="dot wkb"></i>WKB (잡히면 끝)</span>
+        <span><i class="dot key"></i>열쇠</span>
+        <span><i class="dot exit"></i>출구</span>
+        <span><i class="dot corgi"></i>코기블린 (-5초)</span>
+        <span><i class="dot happy"></i>해피 (길막·HECK!)</span>
+      </div>
+
+      <h2 class="section-title">스테이지 선택</h2>
+      <div id="stage-list"></div>
+
+      <p class="muted help">조작: 방향키 / WASD 이동 · P 또는 Esc 일시정지 · R 재시작 · 모바일은 D-Pad 또는 스와이프</p>
+      <button id="btn-reset" class="small">진행도 초기화</button>
+    </section>
+
+    <!-- 게임 화면 -->
+    <section id="game-screen" class="game" hidden>
+      <header class="hud">
+        <div class="hud-left">
+          <div id="hud-chapter" class="hud-chapter"></div>
+          <div id="hud-stage" class="hud-stage"></div>
+        </div>
+        <div class="hud-right">
+          <span id="hud-keys" class="pill"></span>
+          <span id="hud-time" class="pill"></span>
+          <button id="btn-pause" class="icon-btn" aria-label="일시정지">⏸</button>
+        </div>
+      </header>
+
+      <div class="board-wrap">
+        <canvas id="board" aria-label="게임 화면"></canvas>
+        <div id="toast" class="toast" role="status" hidden></div>
+        <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+          <div class="modal-box">
+            <h2 id="modal-title"></h2>
+            <p id="modal-text"></p>
+            <div id="modal-buttons" class="modal-buttons"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="dpad" class="dpad" aria-label="방향 버튼">
+        <button data-dir="up" class="d-up" aria-label="위로">▲</button>
+        <button data-dir="left" class="d-left" aria-label="왼쪽으로">◀</button>
+        <button data-dir="down" class="d-down" aria-label="아래로">▼</button>
+        <button data-dir="right" class="d-right" aria-label="오른쪽으로">▶</button>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="js/stages.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
