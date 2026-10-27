@@ -135,13 +135,30 @@ def main():
     tr = c.Track(len(mix) / SR_A)
     beat_len = lambda bi: beats[min(bi + 1, nb)] - beats[bi]
 
-    # ---- 멜로디 (그대로, 박 보정만)
-    def gt(i):
-        return grid[min(i, len(grid) - 1)]
+    # ---- 멜로디: melody.py가 보컬에서 뽑은 음 (초 단위). 박자 칸에 가까우면 살짝 맞춘다
+    snaps = []
+    for bi in range(nb):
+        snaps += [T(bi, q) for q in (0, 0.25, 0.5, 0.75)]
+        if swing:
+            snaps += [beats[bi] + beat_len(bi) * q for q in (1 / 3, 2 / 3)]
+    snaps = np.sort(np.array(snaps + [beats[-1]]))
+
+    def snap(t):
+        k = np.clip(np.searchsorted(snaps, t), 1, len(snaps) - 1)
+        near = snaps[k] if abs(snaps[k] - t) < abs(snaps[k - 1] - t) else snaps[k - 1]
+        return near if abs(near - t) < 0.035 else t
+
+    mel = pickle.load(open(f'mel/m{f}.pkl', 'rb'))
+    lead = []
+    for n in mel:
+        s0, e0 = snap(n['t0']), snap(n['t1'])
+        if e0 - s0 > 0.05:
+            lead.append(dict(s0=s0, e0=e0, m=n['m']))
+    inst = []
 
     def lead_voice(notes, layers, vib, envp, tail=0.1):
         for n in notes:
-            s0, e0 = gt(n['start']), gt(n['end'])
+            s0, e0 = n['s0'], n['e0']
             d = e0 - s0
             N = int((d + tail) * SR)
             bi = int(np.clip(np.searchsorted(beats, s0) - 1, 0, nb - 1))
