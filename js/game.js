@@ -503,8 +503,7 @@ el('btn-reset').addEventListener('click', () => {
   showMenu();
 });
 el('btn-pause').addEventListener('click', togglePause);
-input.attachDpad(el('dpad'));
-input.attachSwipe(el('board'));
+input.attachJoystick(el('board'), el('joystick'));
 
 window.addEventListener('keydown', e => {
   if (!state) return;

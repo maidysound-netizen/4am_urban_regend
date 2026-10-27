@@ -1,5 +1,5 @@
 // =====================================================================
-// 입력 담당 (키보드)
+// 입력 담당 (키보드 + 모바일 가상 조이스틱)
 // - 키를 "톡" 누르면: pending에 저장 → 다음 이동 때 꼭 한 칸 움직임
 // - 키를 "꾹" 누르면: held에 남아 있음 → 일정 간격마다 계속 움직임
 // 한 번의 이동 틱에는 한 방향만 꺼내 쓰기 때문에 연타해도 벽을 뚫지 못한다.
@@ -43,39 +43,54 @@ function createInput() {
   // 창 밖으로 포커스가 나가면 "누르고 있음" 상태를 지운다
   window.addEventListener('blur', () => { held.length = 0; pending = null; });
 
-  // 모바일 D-Pad: 버튼마다 data-dir="up" 같은 속성을 달아 둔다
-  function attachDpad(root) {
-    root.querySelectorAll('[data-dir]').forEach(btn => {
-      const dir = btn.dataset.dir;
-      btn.addEventListener('pointerdown', e => {
-        e.preventDefault();
-        btn.setPointerCapture(e.pointerId);
-        press(dir);
-      });
-      const up = () => release(dir);
-      btn.addEventListener('pointerup', up);
-      btn.addEventListener('pointercancel', up);
-      btn.addEventListener('lostpointercapture', up);
-    });
-  }
+  // 모바일 가상 조이스틱: 게임판 아무 데나 누르면 그 자리에 조이스틱이 나타나고,
+  // 끄는 방향으로 계속 움직인다. 살짝 튕기기만 해도 한 칸은 간다.
+  function attachJoystick(area, joy) {
+    const knob = joy.querySelector('.joy-knob');
+    const RADIUS = 50;  // 손잡이가 움직일 수 있는 거리(px)
+    const DEAD = 14;    // 이보다 덜 밀면 방향 없음
+    let id = null, origin = null, dir = null;
 
-  // 캔버스 위에서 손가락으로 쓱 밀면 그 방향으로 한 칸
-  function attachSwipe(target) {
-    let start = null;
-    target.addEventListener('pointerdown', e => { start = { x: e.clientX, y: e.clientY }; });
-    target.addEventListener('pointerup', e => {
-      if (!start) return;
-      const dx = e.clientX - start.x, dy = e.clientY - start.y;
-      start = null;
-      if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return; // 너무 짧으면 무시
-      const dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
-      press(dir);
-      release(dir); // pending에 한 번만 남겨서 딱 한 칸 이동
+    function setDir(next) {
+      if (next === dir) return;
+      if (dir) release(dir);
+      dir = next;
+      if (dir) press(dir);
+    }
+    function end() {
+      id = null;
+      setDir(null);
+      joy.classList.remove('active');
+      joy.style.left = joy.style.top = '';
+      knob.style.transform = '';
+    }
+
+    area.addEventListener('pointerdown', e => {
+      if (id !== null) return;
+      e.preventDefault();
+      area.setPointerCapture(e.pointerId);
+      id = e.pointerId;
+      const box = joy.offsetParent.getBoundingClientRect();
+      origin = { x: e.clientX, y: e.clientY };
+      joy.style.left = `${e.clientX - box.left}px`;
+      joy.style.top = `${e.clientY - box.top}px`;
+      joy.classList.add('active');
     });
+    area.addEventListener('pointermove', e => {
+      if (e.pointerId !== id) return;
+      const dx = e.clientX - origin.x, dy = e.clientY - origin.y;
+      const len = Math.hypot(dx, dy);
+      const k = len > RADIUS ? RADIUS / len : 1;
+      knob.style.transform = `translate(${dx * k}px, ${dy * k}px)`;
+      if (len < DEAD) return setDir(null);
+      setDir(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
+    });
+    area.addEventListener('pointerup', e => { if (e.pointerId === id) end(); });
+    area.addEventListener('pointercancel', e => { if (e.pointerId === id) end(); });
   }
 
   return {
-    press, release, attachDpad, attachSwipe,
+    press, release, attachJoystick,
     // 이번 이동에 쓸 방향 하나를 꺼낸다
     takeDirection() {
       const dir = pending || held[held.length - 1] || null;

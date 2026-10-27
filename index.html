@@ -40,7 +40,7 @@
       <h2 class="section-title" data-i18n="selectStage">스테이지 선택</h2>
       <div id="stage-list"></div>
 
-      <p class="muted help" data-i18n="help">조작: 방향키 / WASD 이동 · P 또는 Esc 일시정지 · R 재시작 · M 소리 켜기/끄기 · 모바일은 D-Pad 또는 스와이프</p>
+      <p class="muted help" data-i18n="help">조작: 방향키 / WASD 이동 · P 또는 Esc 일시정지 · R 재시작 · M 소리 켜기/끄기 · 모바일은 화면을 누르고 끌기 (조이스틱)</p>
       <button id="btn-reset" class="small" data-i18n="reset">진행도 초기화</button>
     </section>
 
@@ -60,6 +60,8 @@
 
       <div class="board-wrap">
         <canvas id="board" data-i18n-aria="board" aria-label="게임 화면"></canvas>
+        <!-- 모바일 가상 조이스틱 (반투명, 누른 자리에 나타남) -->
+        <div id="joystick" class="joystick" aria-hidden="true"><div class="joy-base"><div class="joy-knob"></div></div></div>
         <div id="toast" class="toast" role="status" hidden></div>
         <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
           <div class="modal-box">
@@ -70,12 +72,6 @@
         </div>
       </div>
 
-      <div id="dpad" class="dpad" data-i18n-aria="dpad" aria-label="방향 버튼">
-        <button data-dir="up" class="d-up" data-i18n-aria="up" aria-label="위로">▲</button>
-        <button data-dir="left" class="d-left" data-i18n-aria="left" aria-label="왼쪽으로">◀</button>
-        <button data-dir="down" class="d-down" data-i18n-aria="down" aria-label="아래로">▼</button>
-        <button data-dir="right" class="d-right" data-i18n-aria="right" aria-label="오른쪽으로">▶</button>
-      </div>
     </section>
 
   </main>
