@@ -34,7 +34,7 @@
       <h2 class="section-title">스테이지 선택</h2>
       <div id="stage-list"></div>
 
-      <p class="muted help">조작: 방향키 / WASD 이동 · P 또는 Esc 일시정지 · R 재시작 · 모바일은 D-Pad 또는 스와이프</p>
+      <p class="muted help">조작: 방향키 / WASD 이동 · P 또는 Esc 일시정지 · R 재시작 · M 배경음악 · 모바일은 D-Pad 또는 스와이프</p>
       <button id="btn-reset" class="small">진행도 초기화</button>
     </section>
 
@@ -74,6 +74,10 @@
 
   </main>
 
+  <!-- 배경음악 켜기/끄기 (M 키로도 가능) -->
+  <button id="btn-bgm" class="icon-btn bgm-btn" aria-label="배경음악 끄기">🔊</button>
+
+  <script src="js/bgm.js"></script>
   <script src="js/stages.js"></script>
   <script src="js/render.js"></script>
   <script src="js/input.js"></script>

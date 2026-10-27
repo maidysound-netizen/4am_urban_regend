@@ -16,6 +16,7 @@ const SAVE_KEY = '4am-escape-progress';
 const renderer = createRenderer(document.getElementById('board'));
 const input = createInput();
 const el = id => document.getElementById(id);
+createBgm(el('btn-bgm'));
 
 let state = null;       // 지금 하고 있는 판의 모든 정보 (메뉴에선 null)
 let progress = loadProgress();
