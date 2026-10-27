@@ -266,4 +266,5 @@ def render_all(mix, lead, inst, bass, chords, drums, grid, beats, loud, out_p):
     print('wrote', out_p, f'{len(st) / SR:.1f}s')
 
 
-main()
+if __name__ == "__main__":
+    main()
