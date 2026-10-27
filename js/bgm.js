@@ -1,12 +1,12 @@
 // =====================================================================
 // 배경음악 (BGM)
-// - 원곡 3개를 8비트 재즈로 옮긴 곡을 순서대로 틀고, 마지막 곡이 끝나면 처음으로 돌아간다.
+// - 직접 만든 8비트 재즈 곡을 틀고, 끝나면 처음부터 다시 튼다. (곡을 더 넣으면 순서대로 돈다)
 // - 브라우저는 사용자가 한 번 클릭/키 입력을 해야 소리를 허락하므로
 //   첫 입력 때 재생을 시작한다.
 // - 음소거 버튼(🔊/🔇) 또는 M 키로 끄고 켤 수 있고, 설정은 저장된다.
 // =====================================================================
 
-const BGM_TRACKS = ['audio/retro1.m4a', 'audio/retro2.m4a', 'audio/retro3.m4a'];
+const BGM_TRACKS = ['audio/jazz.m4a'];
 const BGM_VOLUME = 0.5;
 const BGM_MUTE_KEY = '4am-escape-bgm-muted';
 
@@ -14,6 +14,7 @@ function createBgm(button) {
   const audio = new Audio();
   audio.preload = 'auto';
   audio.volume = BGM_VOLUME;
+  audio.loop = BGM_TRACKS.length === 1; // 한 곡뿐이면 끊김 없이 반복
   let index = 0;
   let started = false;
   let muted = false;
