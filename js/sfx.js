@@ -9,13 +9,12 @@
 const SFX_VOLUME = 0.35;
 
 let sfxCtx = null;
-// 첫 사용자 입력 때 불러야 소리가 허락된다
+// 첫 사용자 입력 때 만들어야 소리가 허락된다
 function getAudioCtx() {
   const Ctx = window.AudioContext || window.webkitAudioContext;
   if (!Ctx) return null;
   if (!sfxCtx) sfxCtx = new Ctx();
-  if (sfxCtx.state === 'suspended') sfxCtx.resume();
-  return sfxCtx;
+  return sfxCtx; // 켜기(resume)/멈추기(suspend)는 bgm.js의 음소거가 맡는다
 }
 
 function createSfx(isMuted) {

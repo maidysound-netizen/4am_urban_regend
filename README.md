@@ -130,7 +130,7 @@ WKB가 유일한 통로를 막고 서 있지 않은지.
 - 다시 만들기: `python3 tools/jazz_original.py jazz.wav` → `afconvert -f m4af -d aac -b 160000 jazz.wav audio/jazz.m4a`
   (`tools/chiptune.py`는 소리를 만드는 신디사이저, 멜로디·코드는 `jazz_original.py` 위쪽에 악보처럼 적혀 있다)
 - 첫 클릭/키 입력 때 재생 시작 (브라우저 자동재생 제한), 왼쪽 아래 🔊 버튼 또는 M 키로 음소거 (효과음도 같이 꺼짐)
-- 볼륨은 `bgm.js`의 `BGM_VOLUME`(0.22). Web Audio 게인으로 줄여서 아이폰에서도 작아진다
+- 볼륨은 `bgm.js`의 `BGM_VOLUME`(0.22). `<audio>` 대신 Web Audio 버퍼로 재생 (속도를 바꿔도 끊기지 않고, 아이폰에서도 볼륨이 줄어듦)
 - **긴박 모드**: WKB가 6칸 안으로 다가오면 음악이 조금씩 빨라지고(음도 올라감), 바로 옆이면 1.35배
 
 ## 효과음 (SFX)
