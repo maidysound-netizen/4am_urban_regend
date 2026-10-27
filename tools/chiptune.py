@@ -118,6 +118,8 @@ class Track:
     def add(self, bus, start, sig):
         b = self.buf.setdefault(bus, np.zeros(self.n))
         i = int(start * SR)
+        if i < 0:
+            sig, i = sig[-i:], 0
         j = min(self.n, i + len(sig))
         if i < self.n:
             b[i:j] += sig[: j - i]
